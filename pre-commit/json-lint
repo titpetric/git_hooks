@@ -35,7 +35,7 @@ foreach ($changed_files as $file) {
 	}
 	$contents = json_decode(file_get_contents($file));
 	if (is_null($contents)) {
-		echo "Syntax error in ".$file."\n\tInfo: ".json_last_error_readable()."\n";
+		echo "Syntax error in ".$file." (".json_last_error_readable().")\n";
 		$exit_status = 1;
 	}
 }
