@@ -1,6 +1,11 @@
 #!/usr/bin/php
 <?php
 
+if (in_array("--about", $argv)) {
+	echo "Check javascript files syntax with jshint (* needs jshint)";
+	die;
+}
+
 $return = 0;
 
 $output = array();

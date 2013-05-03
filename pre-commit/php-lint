@@ -1,6 +1,11 @@
 #!/usr/bin/php
 <?php
 
+if (in_array("--about", $argv)) {
+	echo "Check PHP files for syntax errors";
+	die;
+}
+
 $return = 0;
 
 $output = array();
