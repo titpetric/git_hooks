@@ -20,8 +20,9 @@ function json_last_error_readable()
 	$constants = get_defined_constants(true);
 	$json_errors = array();
 	foreach ($constants["json"] as $name => $value) {
-		if ($value === $code) {
-			return "JSON_ERROR_".$code;
+		$needle = "JSON_ERROR_";
+		if ($value === $code && substr($needle, 0, strlen($needle)) == $needle) {
+			return $name;
 		}
 	}
 	return "JSON_ERROR_NONE";
