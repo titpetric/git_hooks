@@ -13,15 +13,15 @@ syntax, git will not let you commit it into your repository, forcing you to fix 
 
 Short term goals are to verify:
 
-- Javascript (catches some IE specific bugs which are hard to track down)
+- Javascript (using jshint)
 - JSON checks
 - PHP checks
 - XML checks
-- CSS checks
+- Unit testing (using phpunit)
 
 Additional checks in the future could enforce
 
-- Unit testing (phpunit,...)
+- CSS checks
 - Commit message policy
 
 
