@@ -2,8 +2,40 @@
 <?php
 
 if (in_array("--about", $argv)) {
-	echo "Check javascript files syntax with jshint (* needs jshint)";
+	echo "Check file syntax, abort if invalid";
 	die;
+}
+
+libxml_use_internal_errors(true);
+
+class common
+{
+	public static function json_last_error_readable()
+	{
+		$code = json_last_error();
+		$constants = get_defined_constants(true);
+		$json_errors = array();
+		foreach ($constants["json"] as $name => $value) {
+			$needle = "JSON_ERROR_";
+			if ($value === $code && substr($name, 0, strlen($needle)) == $needle) {
+				return $name;
+			}
+		}
+		return "JSON_ERROR_NONE";
+	}
+
+	public static function display_xml_error($error, $xml)
+	{
+		$line = $xml[$error->line - 1];
+		$return = array();
+		$type = "Unknown";
+		$types = array(LIBXML_ERR_WARNING => "Warning", LIBXML_ERR_ERROR => "Error", LIBXML_ERR_FATAL => "Fatal");
+		if (isset($types[$error->level])) {
+			$type = $types[$error->level];
+		}
+		$return[] = "  - ".$type . " (line $error->line, col $error->column): ".trim($error->message);
+		return implode("\n", $return) . "\n";
+	}
 }
 
 $return = 0;
@@ -22,20 +54,48 @@ exec("git diff-index --cached --name-status $against | egrep '^(A|M)' | awk '{pr
 $exit_status = 0;
 foreach ($changed_files as $file) {
 	if (preg_match('/\/ext\//', $file)) {
-		// skip checks on .js files under an "/ext/" folder
+		// skip checks on all files under an "/ext/" folder
 		// @todo: maybe consider some kind of policy config?
 		continue;
 	}
-	if (!preg_match('/\.js$/', $file)) {
-		continue;
-	}
+
+	$ext = pathinfo($file, PATHINFO_EXTENSION);
+
 	$return = 0;
 	$output = array();
-	exec('jshint '. escapeshellarg($file), $output, $return);
+	switch ($ext) {
+		case "js":
+			exec('jshint '. escapeshellarg($file), $output, $return);
+			break;
+		case "php":
+			exec('php -l '. escapeshellarg($file), $output, $return);
+			break;
+		case "json":
+			$contents = json_decode(file_get_contents($file));
+			if (is_null($contents)) {
+				$output[] = "Syntax error in ".$file." (".common::json_last_error_readable().")";
+				$return = 1;
+			}
+			break;
+		case "xml":
+			$xmlstr = file_get_contents($file);
+			$contents = simplexml_load_string($xmlstr);
+			$xmlstr = explode("\n", $xmlstr);
+			if ($contents === false) {
+				$output[] = "Syntax error in ".$file;
+				$errors = libxml_get_errors();
+				foreach ($errors as $error) {
+					$output[] = common::display_xml_error($error, $xmlstr);
+				}
+				libxml_clear_errors();
+				$return = 1;
+			}
+			break;
+	}
 	if ($return == 0) {
 		continue;
 	}
-	echo trim(implode("\n", $lint_output)) . "\n";
+	echo trim(implode("\n", $output)) . "\n";
 	$exit_status = 1;
 }
 
