@@ -96,6 +96,7 @@ foreach ($changed_files as $file) {
 		continue;
 	}
 	echo trim(implode("\n", $output)) . "\n";
+	echo "----------\n";
 	$exit_status = 1;
 }
 
