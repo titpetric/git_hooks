@@ -6,19 +6,7 @@ if (in_array("--about", $argv)) {
 	die;
 }
 
-$return = 0;
-
-$output = array();
-exec('git rev-parse --verify HEAD 2> /dev/null', $output, $return);
-
-$against = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'; // git empty tree
-if ($return == 0) {
-	$against = 'HEAD';
-}
-
 $exit_status = 0;
-
-echo getcwd()."\n";
 
 if (file_exists("phpunit.xml")) {
 	$return = 0;
