@@ -2,7 +2,7 @@
 <?php
 
 if (in_array("--about", $argv)) {
-	echo "Check file syntax, abort if invalid";
+	echo "Blacklist, don't commit .svn folders/files";
 	die;
 }
 
