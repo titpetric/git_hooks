@@ -1,0 +1,29 @@
+#!/usr/bin/php
+<?php
+
+if (in_array("--about", $argv)) {
+	echo "Check file syntax, abort if invalid";
+	die;
+}
+
+$return = 0;
+
+$output = array();
+exec('git rev-parse --verify HEAD 2> /dev/null', $output, $return);
+
+$against = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'; // git empty tree
+if ($return == 0) {
+	$against = 'HEAD';
+}
+
+$changed_files = array();
+exec("git diff-index --cached --name-status $against | egrep '^(A|M)' | awk '{print $2;}'", $changed_files);
+
+foreach ($changed_files as $file) {
+	if (preg_match('/\.svn/', $file)) {
+		echo "Denied commiting '$file' - no .svn folders!\n";
+		exit(1);
+	}
+}
+
+exit(0);
