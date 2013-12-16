@@ -1,0 +1,21 @@
+#!/usr/bin/php
+<?php
+
+if (in_array("--about", $argv)) {
+	echo "Run custom tests on code before commit (if pre-commit.sh exists)";
+	die;
+}
+
+$exit_status = 0;
+
+if (file_exists("pre-commit.sh") && is_executable("pre-commit.sh")) {
+	$return = 0;
+	$output = array();
+	exec("./pre-commit.sh", $output, $return);
+	if ($return != 0) {
+		$exit_status = 1;
+		echo trim(implode("\n", $output))."\n";
+	}
+}
+
+exit($exit_status);
