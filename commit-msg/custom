@@ -1,0 +1,61 @@
+#!/usr/bin/php
+<?php
+
+$message = @file_get_contents($argv[1]);
+if (!empty($message)) {
+	$message = strtolower(trim($message));
+}
+if (empty($message)) {
+	echo "Commit message cannot be empty.\n";
+	echo "Message needs to be in format: <type>(<scope>): <subject>\n";
+	exit(1);
+}
+
+$types = array();
+$types[] = array("A new feature", "new, add, feat, import");
+$types[] = array("A bug fix", "fix");
+$types[] = array("Style change", "style");
+$types[] = array("Documentation change", "docs, documentation");
+$types[] = array("Refactor code", "refactor, upd");
+$types[] = array("Performance improvement", "perf");
+$types[] = array("Adding missing tests", "test");
+$types[] = array("Updating misc tasks", "misc, chore");
+
+function displayUsage()
+{
+	global $types;
+	echo "Message needs to be in format: <type>(<scope>): <subject>\n";
+	echo "Valid types:\n\n";
+	foreach ($types as $type) {
+		echo "  " . $type[1];
+		$tabs = ceil((strlen($type[1]) + 2) / 8.0);
+		while ($tabs < 4) {
+			echo "\t";
+			$tabs ++;
+		}
+		echo "- " . $type[0] . "\n";
+	}
+	exit(1);
+}
+
+if (preg_match('/(.+) ?\((.+)\): .*/', $message, $matches)) {
+	$status_type = false;
+	foreach ($types as $type) {
+		list($title, $tags) = $type;
+		$tags = array_map("trim", explode(",", $tags));
+		foreach ($tags as $tag) {
+			if (substr($message, 0, strlen($tag)) === $tag) {
+				$status_type = true;
+				break 2;
+			}
+		}
+	}
+	if (!$status_type) {
+		echo "Invalid type: " . $matches[1] . "\n";
+		displayUsage();
+	}
+} else {
+	displayUsage();
+}
+
+exit(0);
