@@ -71,7 +71,15 @@ foreach ($changed_files as $file) {
 			exec('php -l '. escapeshellarg($file), $output, $return);
 			break;
 		case "json":
-			$contents = json_decode(file_get_contents($file));
+			$file_contents = file($file);
+			foreach ($file_contents as $k => $line) {
+				$line = explode("//", $line);
+				if (count($line)>1 && ((substr_count($line[1], '"')%2) == 0) && ((substr_count($line[1], "'")%2) == 0)) {
+					$file_contents[$k] = $line[0];
+				}
+			}
+			$file_contents = implode("\n", $file_contents);
+			$contents = json_decode($file_contents, true);
 			if (is_null($contents)) {
 				$output[] = "Syntax error in ".$file." (".common::json_last_error_readable().")";
 				$return = 1;
